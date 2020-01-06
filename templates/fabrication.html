@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="HandheldFriendly" content="true">
+  <title>Defect Detection in Fabric Material</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/zoomwall.css">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" type="text/javascript"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  <script src="../static/zoomwall.js"></script>
+  <link rel="stylesheet" type="text/css" href="../static/fabrication.css">
+
+</head>
+<body>
+<div class="row" style="border-bottom: 1px solid #ccc">
+  <div class="container">
+    <div class="header-logo">
+      <a href="fabrication.html">
+        <img class="company-logo" src="../static/affine-logo.svg" />
+      </a>
+      <span class="heading heading-color">
+          Defect Detection in Fabrics
+       </span>
+    </div>
+    
+  </div>
+</div>
+<div class="col-lg-12">
+    <div class="col-lg-6 left-side-section">
+      <div class="row">
+        <form id="data" enctype="multipart/form-data" method="post">
+          <label>Upload your Image</label>
+          <div class="image-upload">
+              <label for="pic">
+                  <img src="../static/upload.svg"/>
+                  <span style="padding-left: 30px;">Drag your file here or Click here to upload</span>
+              </label>
+              <input type="file" name="pic" id="pic" accept="image/*"  required/>
+          </div>
+          <p>
+            <button type="submit" class="btn btn-sm btn-primary">Detect Defect Type</button>
+          </p>
+        </form>
+      </div>
+      <div class="container carousel-container">
+        <label style="font-weight: bold;">Or Select from Gallery :</label>
+        <div id="myCarousel" class="carousel slide" data-ride="carousel" >
+          <ol class="carousel-indicators">
+            <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+            <li data-target="#myCarousel" data-slide-to="1"></li>
+            <li data-target="#myCarousel" data-slide-to="2"></li>
+            <li data-target="#myCarousel" data-slide-to="3"></li>
+            <li data-target="#myCarousel" data-slide-to="4"></li>
+            <li data-target="#myCarousel" data-slide-to="5"></li>
+            
+          </ol>
+          <div class="carousel-inner">
+            <div class="item active" >
+              <img class="carousel-img" src="../static/images/BE.jpg" id="img1"  onclick="myFunction(this);">
+              <div class="carousel-caption">
+              </div>
+            </div>
+            <div class="item">
+              <img class="carousel-img" src="../static/images/BP.jpg" id="img2" onclick="myFunction(this);">
+              <div class="carousel-caption">
+              </div>
+            </div>
+            <div class="item">
+              <img class="carousel-img" src="../static/images/MP.jpg" id="img3" onclick="myFunction(this)">
+              <div class="carousel-caption">
+              </div>
+            </div>
+            <div class="item" >
+             <img class="carousel-img" src="../static/images/ND.jpg" id="img4" onclick="myFunction(this)">
+              <div class="carousel-caption">
+              </div>
+            </div>
+            <div class="item">
+              <img class="carousel-img" src="../static/images/RM.jpg" id="img5" onclick="myFunction(this)">
+              <div class="carousel-caption">
+              </div>
+            </div>
+            <div class="item">
+              <img class="carousel-img" src="../static/images/SM.jpg" id="img6" onclick="myFunction(this)">
+              <div class="carousel-caption">
+              </div>
+            </div>
+          </div>
+          <!-- Left and right controls -->
+          <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+            <span class="sr-only">Previous</span>
+          </a>
+          <a class="right carousel-control" href="#myCarousel" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+            <span class="sr-only">Next</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 right-side-section">
+      <div class="no-image">
+          <p>
+              <img src="../static/interface-alert-circle-512.png" style="width: 20%" />
+          </p>
+          <p>
+              <b>Upload a picture or <br/> Select a Image for gallery</b><br/>to display output
+          </p>
+      </div>
+      <img id="target" class="tar">
+      <!-- <div class="tabledata">
+        <div id="div1" style= "position:relative;"></div>
+        <table id="table" class="hidden">
+            <tr>
+                <th>Property</th>
+                <th>Value</th>
+            </tr>
+        </table>
+      </div> -->
+      <div class="chartsData">
+          <span class="chart-container" style="position: absolute; height:35vh;">
+            <canvas class="chart" id="myChart" style="margin-left:30%;margin-top:70%"></canvas>
+          </span>
+          <p id="demo"></p>
+          <div id="imgg" class="idimg" style="margin-left:20%;"></div>
+      </div>
+    </div>
+</div>
+
+<div class="footer">
+    <span class="aa-copyright">Copyright Affine Analytics (P) LTD.</span>
+</div>
+
+
+<script>
+   $("form#data").submit(function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    $('.no-image').addClass("hide")
+    $.ajax({
+        url: 'http://182.156.213.183:5010/predictnewimage',
+        type: 'POST',
+        data: formData,
+        success: function(data) {
+            var temp = JSON.parse(data);
+            obj = JSON.parse(temp.replace(/'/g, '"'));
+            putImage()
+$('#target').css('display','block');
+            var labels = [];
+
+            var datachart = [];
+            Object.keys(obj).map(iter => {
+                labels.push(iter)
+            })
+            Object.keys(obj).map(iter => {
+                datachart.push(obj[iter])
+            })
+            var ctx = document.getElementById("myChart").getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: datachart,
+                        borderColor: ['#196c9e', '#2638A9  ', '#8680bd', '#ccc', '#83c336', '#17A589'],
+                        backgroundColor: ['#196c9e', '#2638A9  ', '#8680bd', '#ccc', '#83c336', '#17A589'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                }
+            });
+            var arr = Object.keys(obj).map(function(key) {
+                return obj[key];
+            });
+            var min = Math.min.apply(null, arr);
+            var max = Math.max.apply(null, arr);
+            console.log(arr)
+            console.log(max)
+            console.log(min)
+            console.log(maxkey)
+            
+            
+
+            var maxkey = Object.keys(obj).find(key => obj[key] === max)
+            document.getElementById("demo").innerHTML = `RESULT : <strong> ${maxkey}</strong> with value <strong>${max}</strong> %`
+
+        },
+        cache: false,
+        contentType: false,
+        processData: false
+    });
+});
+
+function showImage(src, target) {
+    var fr = new FileReader();
+
+    fr.onload = function() {
+        target.src = fr.result;
+    }
+    fr.readAsDataURL(src.files[0]);
+
+}
+
+function putImage() {
+    var src = document.getElementById("pic");
+    $("#imgg").empty();
+    var target = document.getElementById("target");
+    target.style.height = '170px';
+    target.style.width = '200px';
+    target.style.position = 'absolute';
+    target.style.left = '25%';
+    target.style.marginTop = '50px'
+    var para = document.createElement("p");
+    para.className = "idnam"
+    
+    var element = document.getElementById("div1");
+    document.querySelectorAll('.idnam').forEach(function(a) {
+        a.remove()
+    })
+    element.appendChild(para);
+    showImage(src, target);
+}
+
+function myFunction(target) {
+    $('.no-image').addClass("hide")
+    var img = document.getElementById($(target).attr("id")).src
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+
+        if (this.readyState == 4 && this.status == 200) {
+$("#target").css('display','none');
+            var data = this.responseText;
+            var temp = JSON.parse(data);
+            var obj = JSON.parse(temp.replace(/'/g, '"'));
+            var newimg = document.createElement("img");
+            newimg.className = "idim"
+            newimg.src = img;
+            newimg.style.height = '170px';
+            newimg.style.width = '220px';
+            document.querySelectorAll('.idim').forEach(function(a) {
+                a.remove()
+            })
+            var imgdisp = document.getElementById('imgg');
+            imgdisp.appendChild(newimg);
+            var para = document.createElement("p");
+            para.className = "idnam"
+            var element = document.getElementById("div1");
+            document.querySelectorAll('.idnam').forEach(function(a) {
+                a.remove()
+            })
+
+            element.appendChild(para);
+            var labels = [];
+            var datachart = [];
+            Object.keys(obj).map(iter => {
+                labels.push(iter)
+            })
+            Object.keys(obj).map(iter => {
+                datachart.push(obj[iter])
+            })
+            var ctx = document.getElementById("myChart").getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: datachart,
+                        borderColor: ['#196c9e', '#2638A9  ', '#8680bd', '#ccc', '#83c336', '#17A589'],
+                        backgroundColor: ['#196c9e', '#2638A9  ', '#8680bd', '#ccc', '#83c336', '#17A589'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                }
+            });
+            var arr = Object.keys(obj).map(function(key) {
+                return obj[key];
+            });
+            var min = Math.min.apply(null, arr);
+            var max = Math.max.apply(null, arr);
+            var maxkey = Object.keys(obj).find(key => obj[key] === max)
+            console.log(arr)
+            console.log(max)
+            console.log(min)
+            console.log(maxkey)
+            document.getElementById("demo").innerHTML = `RESULT : <strong> ${maxkey}</strong> with value <strong>${max}</strong> %`
+        }
+    };
+    xhttp.open("POST", "http://182.156.213.183:5010/predict", true);
+    xhttp.withCredentials = false;
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.setRequestHeader("cache-control", "no-cache", "no-cors");
+    xhttp.send(img);
+}
+    </script>
+
+</body>
+</html>
